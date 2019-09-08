@@ -1,0 +1,70 @@
+--- src/LTE-Tracker.cpp	2019-09-07 18:14:32.074853499 +0200
++++ src/LTE-Tracker.cpp	2019-09-06 23:50:30.898685462 +0200
+@@ -909,8 +909,7 @@
+       if (dev!=NULL) {bladerf_close(dev); dev = NULL; return(-1);}
+   }
+ 
+-  /*bladerf_
+-  lna_gain actual_lna_gain;
++  bladerf_lna_gain actual_lna_gain;
+   status = bladerf_get_lna_gain(dev, &actual_lna_gain);
+   if (status != 0) {
+       printf("config_bladerf bladerf_get_lna_gain: Failed to get lna gain: %s\n",
+@@ -928,23 +927,15 @@
+     lna_gain_str = (char *)"BLADERF_LNA_GAIN_UNKNOWN";
+   } else {
+     lna_gain_str = (char *)"INVALID_BLADERF_LNA_GAIN";
+-  }*/
+-  
+-  bladerf_gain_mode mode;
+-  mode = BLADERF_GAIN_AUTOMATIC;
+-  bladerf_channel channel = BLADERF_CHANNEL_RX(0);
+-  status = bladerf_set_gain_mode(dev, channel, mode);
+-  if (status < 0) {  
+-  printf("config_bladerf bladerf_set_gain: Failed to set bladerf gain automatic: %s\n",
+-            bladerf_strerror(status));
+   }
+-  /*int actual_vga1_gain;
++
++  int actual_vga1_gain;
+   status = bladerf_get_rxvga1(dev, &actual_vga1_gain);
+   if (status != 0) {
+       printf("config_bladerf bladerf_get_rxvga1: Failed to get rxvga1 gain: %s\n",
+               bladerf_strerror(status));
+       if (dev!=NULL) {bladerf_close(dev); dev = NULL; return(-1);}
+-  
++  }
+ 
+   int actual_vga2_gain;
+   status = bladerf_get_rxvga2(dev, &actual_vga2_gain);
+@@ -952,9 +943,9 @@
+       printf("config_bladerf bladerf_get_rxvga2: Failed to get rxvga2 gain: %s\n",
+               bladerf_strerror(status));
+       if (dev!=NULL) {bladerf_close(dev); dev = NULL; return(-1);}
+-  }*/
++  }
+ 
+-  //int actual_total_vga_gain = actual_vga1_gain + actual_vga2_gain;
++  int actual_total_vga_gain = actual_vga1_gain + actual_vga2_gain;
+ 
+   status = bladerf_set_frequency(dev, BLADERF_MODULE_RX, (unsigned int)fc);
+   if (status != 0) {
+@@ -963,7 +954,7 @@
+       if (dev!=NULL) {bladerf_close(dev); dev = NULL; return(-1);}
+   }
+ 
+-  long unsigned int actual_frequency;
++  unsigned int actual_frequency;
+   status = bladerf_get_frequency(dev, BLADERF_MODULE_RX, &actual_frequency);
+   if (status != 0) {
+       printf("config_bladerf bladerf_get_frequency: Failed to read back frequency: %s\n",
+@@ -988,7 +979,8 @@
+   rtlsdr_device *fake_rtlsdr_dev = NULL;
+   hackrf_device *fake_hackrf_dev = NULL;
+   capture_data(fc, 1, false, " ", false, " ", " ",fake_rtlsdr_dev,fake_hackrf_dev,dev,dev_type_t::BLADERF, capbuf, fc_programmed, fs_programmed,0);
+-  printf("config_bladerf: set bladeRF to %fMHz %fMsps BW %fMHz VGA_GAIN automatic.\n", (float)actual_frequency/1000000.0f, (float)actual_sample_rate/1000000.0f, (float)actual_bw/1000000.0f);
++
++  printf("config_bladerf: set bladeRF to %fMHz %fMsps BW %fMHz %s VGA_GAIN %ddB (%d+%d).\n", (float)actual_frequency/1000000.0f, (float)actual_sample_rate/1000000.0f, (float)actual_bw/1000000.0f, lna_gain_str, actual_total_vga_gain, actual_vga1_gain, actual_vga2_gain);
+   return(status);
+ }
+ #endif
